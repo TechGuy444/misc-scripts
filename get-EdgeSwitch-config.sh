@@ -6,6 +6,7 @@
 
 SWITCHES="192.168.0.3 192.168.0.4 192.168.0.5"
 UA="User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:57.0) Gecko/20100101 Firefox/57.0"
+DSTDIR="/tmp/"
 
 for SW in $SWITCHES;
  do
@@ -21,12 +22,18 @@ curl -i -s -k  -X $'POST' -H $"$UA" \
      -b $'SIDSSL='$COOKIE --data-binary $'file_type_sel%5B%5D=config' \
         $'https://'$SW'/htdocs/lua/ajax/file_upload_ajax.lua?protocol=6'>/dev/null
 
-
 # Download config
 curl -s -k  -X $'GET' -H $"$UA" \
      -H $'Referer: https://'$SW'/htdocs/pages/base/file_upload_modal.lsp?filetypes=6&protocol=6' \
      -H $'Upgrade-Insecure-Requests: 1' \
      -b $'SIDSSL'=$COOKIE \
-        $'https://'$SW'/htdocs/pages/base/http_download_file.lua?filepath=/mnt/download/TempConfigScript.scr' -o /tmp/$SW"_"$(date +%Y%m%d%H%M)
+        $'https://'$SW'/htdocs/pages/base/http_download_file.lua?filepath=/mnt/download/TempConfigScript.scr' -o ${DSTDIR}${SW}"_"$(date +%Y%m%d%H%M)
+
+# Logout so we don't occupy too many https loginsessions
+curl -s -k  -X $'GET' -H $"$UA" \
+    -H $'Referer: https://'$SW'/htdocs/pages/main/main.lsp' \
+    -H $'Upgrade-Insecure-Requests: 1' \
+    -b $'SIDSSL'=$COOKIE \
+        $'https://'$SW'/htdocs/pages/main/logout.lsp'>/dev/null
 
 done
